@@ -22,7 +22,7 @@ export function HomePage() {
         </div>
 
         <div className="right-section">
-          <a className="orders-link header-link" href="/orders">
+          <a className="orders-link header-link" href="orders.html">
             <span className="orders-text">Orders</span>
           </a>
 
