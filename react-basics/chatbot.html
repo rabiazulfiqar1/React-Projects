@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .no-scrollbar {
+            overflow:scroll;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div class = "js-container"></div>
+
+    <script src="react-basics.js"></script>
+
+    <script src="https://unpkg.com/supersimpledev/react.js"></script>
+    <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
+
+    <script src="https://unpkg.com/supersimpledev/chatbot.js"></script>
+
+    <script src="https://unpkg.com/supersimpledev/babel.js"></script>
+    <script type="text/babel">
+
+        function ChatInput({chatMessages, setChatMessages}) {
+            const [inputText, setInputText] = React.useState(""); //initial value of input box empty: ""
+            const [isLoading, setLoading] = React.useState(false);
+
+            //since we are calling this function when event happens(onChange) and this is an eventhandler it will get parameter: event
+            function saveInputText(event) {
+                // setInputText(event.target.value);
+                const input = event.target //this will give the input element
+                setInputText(input.value);
+            }
+
+            async function sendMessage() {
+                if (!inputText.trim() || isLoading) {
+                    return;
+                }
+                setInputText(""); //after sending message input box should be empty
+                setLoading(true);
+                const newChatMessages = [
+                    ...chatMessages,
+                    {
+                        message: inputText,
+                        sender: "user",
+                        id: crypto.randomUUID()
+                    },
+                    {
+                        // message: "Loading.....",
+                        message: <img src="loading-spinner.gif" alt="loading...." className="h-10 m-[-15px]"/>,
+                        sender: "robot",
+                        id: crypto.randomUUID()
+                    }
+                ];
+                setChatMessages(newChatMessages);
+
+                const response = await Chatbot.getResponseAsync(inputText);
+                setChatMessages([
+                    ...newChatMessages.slice(0,-1),
+                    {
+                        message: response,
+                        sender: "robot",
+                        id: crypto.randomUUID()
+                    }
+                ]);
+                setLoading(false);
+            }
+
+            function checkKey(event) {
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+                else if (event.key === "Escape") setInputText("");
+            }
+
+            return (
+                <div className = "flex items-center justify-center gap-3 mb-6">
+                    <input 
+                        className = "px-3 py-2.5 flex-1 border border-black rounded-lg" 
+                        placeholder="Send a message to Chatbot"
+                        onChange={saveInputText}
+                        value={inputText} 
+                        onKeyDown={checkKey}
+                    />
+                    <button 
+                        className="px-5 py-3 bg-green-600 rounded-xl text-white text-base"
+                        onClick={sendMessage}
+                    >Send</button>
+                </div>
+            );
+        }
+
+        function WelcomeMessage() {
+            return (
+                <p 
+                    className="text-center text-gray-500 text-base mb-3">
+                    Welcome to the chatbot project! Send a message using the textbox above.
+                </p>
+            );
+        }
+
+        function ChatMessage(props) {
+
+            const {message, sender}= props //destructuring
+            let src = "robot.png";
+            let direction = "flex-row";
+
+            if (sender === "user") {
+                src = "user.png";
+                direction = "flex-row-reverse";
+            }
+            return (
+                <div className = {`flex items-center ${direction} gap-1.5 mb-4`}>
+                    <img src={src} alt="profile" className="w-11 h-11"/>
+                    <p className="px-5 py-3 rounded-xl bg-gray-100 max-w-sm">{message}</p>
+                </div>
+            );
+        }
+
+        function ChatMessages({chatMessages}) {
+            // const chatMessages=[{
+            //     message: "hello chatbot",
+            //     sender: "user",
+            //     id: "id1" 
+            // }, {
+            //     message: "Hello! How can I help you?",
+            //     sender: "robot",
+            //     id: "id2"  
+            // }, {
+            //     message: "can you get me today's date?", 
+            //     sender: "user",
+            //     id: "id3"  
+            // }, {
+            //     message: "Today is September 27", 
+            //     sender: "robot",
+            //     id: "id4" 
+            // }];
+
+//             const chatMessageComponents = chatMessages.map((chatMessage) => {
+//                 return (
+// //JSX rule is to use braces for javascript expressions like chatMessage.message to evaluate it and store value in message without it, will be treated as string
+//                     <ChatMessage 
+//                         message={chatMessage.message}
+//                         sender={chatMessage.sender}
+//                     />
+//                 );
+//             });
+
+//             return chatMessageComponents
+
+//             const chatMessagesRef = React.useRef(null); //null: intiial value
+// //React will run this func after component created and everytime component updated
+//             React.useEffect(() => {
+//                 //placed this current line inside useEffect because we first want component to be created and then access HTML as useEffect runs after component created
+//                 const containerElem = chatMessagesRef.current
+//                 containerElem.scrollTop = containerElem.scrollHeight;
+//             }, [chatMessages]);
+
+            const chatMessagesRef = useAutoScroll(chatMessages);
+
+            function renderWelcomeMsg() {
+                return (
+                    <WelcomeMessage />
+                );
+            }
+
+            function renderContent() {
+                return (
+                    chatMessages.map((chatMessage) => {
+                        return (
+                            <ChatMessage 
+                                message={chatMessage.message}
+                                sender={chatMessage.sender}
+                                key={chatMessage.id}
+                            />
+                        );
+                    })
+                );
+            }
+            return (
+                <div 
+                    className="flex-1 mt-6 no-scrollbar"
+                    ref = {chatMessagesRef} //react will take this div element and save it inside chatMessagesRef
+                >
+                    {chatMessages.length === 0 ? renderWelcomeMsg() : renderContent()}
+                </div>
+            );
+        }
+
+        //starts with "use" as custom HOOK
+        function useAutoScroll(dependencies) {
+            const chatMessagesRef = React.useRef(null); //null: intiial value
+//React will run this func after component created and everytime component updated
+            React.useEffect(() => {
+                //placed this current line inside useEffect because we first want component to be created and then access HTML as useEffect runs after component created
+                const containerElem = chatMessagesRef.current
+                containerElem.scrollTop = containerElem.scrollHeight;
+            }, [dependencies]);
+            return chatMessagesRef;
+        }
+
+//Instead of manually creating messages, we can use JS to generate them, for that we need data which needs to be generated. i.e: message and sender
+//we will use a list containing data(objects), objects to group message and sender
+        function App() {
+            const array = React.useState([
+            // {
+            //     message: "hello chatbot",
+            //     sender: "user",
+            //     id: "id1" 
+            // }, {
+            //     message: "Hello! How can I help you?",
+            //     sender: "robot",
+            //     id: "id2"  
+            // }, {
+            //     message: "can you get me today's date?", 
+            //     sender: "user",
+            //     id: "id3"  
+            // }, {
+            //     message: "Today is September 27", 
+            //     sender: "robot",
+            //     id: "id4" 
+            // }
+            ]);
+            //below is the shortcut for array destructuring just like object destructuring
+            const [chatMessages, setChatMessages] = array; //note that order matters here, chatMessages is first so will get 0 index
+            // const chatMessages = array[0]; //the current(initial) data
+            // const setChatMessages = array[1]; //setChatMessages is a updater fnction reference
+
+            return (
+                <div className="max-w-2xl mx-auto px-4 h-screen flex flex-col">
+                    <ChatMessages 
+                        chatMessages={chatMessages}
+                    />
+                    <ChatInput 
+                        chatMessages={chatMessages}
+                        setChatMessages={setChatMessages}
+                    />
+                    {/*{chatMessageComponents}*/}
+                    {/*<ChatMessage 
+                        message="hello chatbot" 
+                        sender="user" 
+                    />
+                    <ChatMessage 
+                        message="Hello! How can I help you?" 
+                        sender="robot" 
+                    />
+                    <ChatMessage 
+                        message="can you get me today's date?" 
+                        sender="user" 
+                    />
+                    <ChatMessage 
+                        message="Today is September 27" 
+                        sender="robot" 
+                    /> */}
+                </div>
+            );
+        }
+
+        const container = document.querySelector(".js-container");
+        ReactDOM.createRoot(container).render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+React is an external lib and helps us make websites easier
+script can load code from anywhere on internet not just on our computer
+react external lib is divided into 2 external libs
+react = contains all shared features used in both websites and mobiles
+react-dom = features specific to websites
+babel = javascript compiler, translates other languages into just
+bable needed bcz with react we dont use normal javascript, we use enhanced version of js called JSX(js XML)
+JSX is same as js but we can write HTML directly in our js code
+Our web browser doesnt understand JSX, in order to use it we use bable external lib (which translates JSX into normal js)
+component = a piece of website
+component name must start with capital letter in react //PascalCase
+components let us create our own HTML elements
+props = make components reusable
+<>....</> React Fragment: group multiple JSX elements without adding an extra DOM element like <div>.
+in react if we insert an array of components, we need to give each component a prop: key which helps react track changes in array. key has to be unique
+each data should have unique id 
+state: data that is connected to HTML, when data updated, HTML updated
+React.useState returns an array, first value of this array: array[0] returns data (intial value), array[1] is a function that updates the data
+only when this function is used to update data, HTML will also be updated by react, array[1] also called updater function
+spread operator: ... takes value in an array and copies them into new array
+In react we should not update the data directly, instead use updater function from react.useState
+React handles DOM for us, so we shouldn't manually change DOM as it will conflict with the react working
+state: data that is connected to HTML, when you update this data HTML updated
+Components Hierarchy:
+                Component Tree
+                        App
+                       /   \
+                      /     \
+                     /       \
+               ChatInput      ChatMessages  [chatMessages, setChatMessages] are here but we want to access in ChatInput too so move it one step up
+                                   | 
+                                   |
+                                   |
+                                ChatMessage
+                                ChatMessage
+
+LIFTING THE STATE UP: share state between multiple components
+By moving this state up into App component then app can share it with both chatInput and chatMessages
+                [chatMessages, setChatMessages]
+                        App
+                       /   \
+                      /     \
+                     /       \
+               ChatInput      ChatMessages 
+                                   | 
+                                   |
+                                   |
+                                ChatMessage
+                                ChatMessage    
+
+value: input tag attribute change text inside input   
+state doesnt update immediately, it only updates after all the code is finished  
+in react we use className to set class bcz react is just js code and js already has a feature called class(reserved word)     
+HOOKS: let us insert react features into our components, every hook start with word use
+React.useState() is a hook, state is a react feature which we use       
+React.useEffect() is a hook, lets us run some code after component created or updated  
+Hooks shouldn't be inside anything(like function or if statement) and should be at the top of component   
+useEffect 2nd parameter is array ([]) which controls when useEffect runs called dependency array, [](empty array) means it will run only once when component created
+[chatMessages] will mean this func run everytime data changes     
+React.useRef() automatically save an HTML element from the component, it creates ref which is a container with special react features  
+In addition to built in hooks like useState and useEffect we can create our CUSTOM HOOKS too (to easily add that feature on other components)
+Inside custom hooks we just use combination of other hooks: like useRef and useEffect etc
+node command in terminal lets us run JS code outside of a browser
+some npm packages also add command to our command line (e.g: create-vite (package) adds a command) like you can write in terminal create-vite as command
+npx (x=execute) is a shortcut which installs create-vite and runs command create-vite (this package helps us set up react)
+create-vite command helps us setup new react project
+@ in command used for specific version
+npm create vite = npx create-vite
+vite = tool that we used to set up this project, it also helps us build website (in index.html loads our jsx file), also creates a server (a server puts our website on URL)
+before we were using live server to display on browser, vite will itself do that
+assets folder: contain images to be displayed on site
+public folder: contain URL images for website
+eslint: an extension which tells JS errors
+node_modules folder: contains all packages needed for this project
+.gitignore: defines which files not be uploaded on github (like files having api keys)
+package.json file: contains all required packages
+package-lock.json file: contains package versions too
+StrictMode component is provided by react which gives us some additional checks and warnings when developing website or app
+npm run = tells computer to look inside package.json for section called "scripts" 
+dev = looks inside "scripts" for "dev" and run command on right side which is "vite" it runs the server 
+npm run lint = gives list of errors (runs command eslint)
